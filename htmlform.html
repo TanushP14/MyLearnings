@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy Contact Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(45deg, #01306a, #003a84);
+            background-size: 400% 400%;
+            animation: gradientAnimation 5s ease infinite; /* Faster gradient change */
+        }
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+        .form-container {
+            background: #fff;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            max-width: 100%;
+            position: relative;
+            overflow: hidden;
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 4s ease, transform 4s ease;
+            animation: fadeInUp 1s ease-out forwards;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .form-container.fade-out {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 80%);
+            opacity: 0.3;
+            pointer-events: none;
+            animation: lightEffect 2s ease infinite;
+        }
+        @keyframes lightEffect {
+            0% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.2); opacity: 0.1; }
+            100% { transform: scale(1); opacity: 0.3; }
+        }
+        .form-container h1 {
+            margin-bottom: 1em;
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 1em;
+            position: relative;
+            overflow: hidden;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5em;
+            color: #555;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transform: scale(0.98);
+            transition: transform 0.3s ease;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            transform: scale(1);
+            border-color: #003a84;
+        }
+        .form-group textarea {
+            height: 150px;
+            resize: vertical;
+        }
+        .form-group button {
+            background-color: #003a84;
+            color: #fff;
+            border: none;
+            padding: 0.8em;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        .form-group button:hover {
+            background-color: #01306a;
+        }
+        @keyframes fadeOutUp {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+        }
+        .loading-container {
+            display: none;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .loading-container.active {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #003a84;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            margin-bottom: 1em;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            font-size: 1.5em;
+            color: #333;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            width: 0;
+            animation: typing 4s steps(30, end), blink-caret 0.75s step-end infinite;
+        }
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 20em; }
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: black; }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Contact Us</h1>
+        <form id="contactForm" action="https://formspree.io/f/meojwoga" method="POST">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" required></textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit">Send Message</button>
+            </div>
+        </form>
+        <div id="loadingContainer" class="loading-container">
+            <div class="spinner"></div>
+            <div id="loadingText" class="loading-text">Global Inc.</div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Show the loading animation
+            const loadingContainer = document.getElementById('loadingContainer');
+            const formContainer = document.querySelector('.form-container');
+            loadingContainer.classList.add('active');
+
+            // Fade out the form container
+            formContainer.classList.add('fade-out');
+
+            // Simulate form submission and hide loading animation after 4 seconds
+            setTimeout(function() {
+                loadingContainer.classList.remove('active');
+                formContainer.style.opacity = '0'; // Ensure opacity is zero after transition
+                formContainer.style.transform = 'translateY(30px)'; // Ensure transform is correct
+                document.getElementById('contactForm').submit(); // Submit the form
+            }, 4000); // 4 seconds for the fade-out duration
+        });
+    </script>
+</body>
+</html>
